@@ -17,6 +17,13 @@ public class Util {
         return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, Resources.getSystem().getDisplayMetrics());
     }
 
+    /**
+     * ++Options中的inDensity属性会根据drawable文件夹的分辨率来赋值++
+     ++inTartgetDensity会根据屏幕的像素密度来赋值++
+     * @param context
+     * @param radius
+     * @return
+     */
     public static Bitmap getBitmap(Context context,int radius){
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;

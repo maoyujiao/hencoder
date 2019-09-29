@@ -11,6 +11,7 @@ import android.graphics.RectF;
 import android.graphics.Xfermode;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 
 import com.aiyuba.hencoder.util.Util;
@@ -41,12 +42,11 @@ public class CircleView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        int count = canvas.saveLayer(savedArea,paint);//什么临行缓冲，没这句话不行
+        int count = canvas.saveLayer(savedArea,paint);//什么离屏缓冲，没这句话不行
         canvas.drawCircle(getWidth()/2,getHeight()/2,RADIUS,paint);
         paint.setXfermode(xfermode);
         canvas.drawBitmap(bitmap,getWidth()/2 - RADIUS,getHeight()/2 - RADIUS,paint);
         paint.setXfermode(null);
         canvas.restoreToCount(count);
-
     }
 }

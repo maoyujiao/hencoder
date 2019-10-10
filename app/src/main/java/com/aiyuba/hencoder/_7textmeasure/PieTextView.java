@@ -20,7 +20,7 @@ import java.util.Random;
 
 public class PieTextView extends View {
     Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private static int RADIUS = Util.dp2px(100);
+    private static float RADIUS = Util.dp2px(100);
     RectF rectF = new RectF();
     Rect rect = new Rect();
     Paint.FontMetrics fontMetrics = new Paint.FontMetrics();

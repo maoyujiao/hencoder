@@ -13,8 +13,8 @@ import com.aiyuba.hencoder.R;
  */
 
 public class Util {
-    public static int dp2px(int dp){
-        return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, Resources.getSystem().getDisplayMetrics());
+    public static float dp2px(int dp){
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, Resources.getSystem().getDisplayMetrics());
     }
 
     /**

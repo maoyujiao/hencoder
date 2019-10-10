@@ -18,7 +18,7 @@ import com.aiyuba.hencoder.util.Util;
 public class PieChart extends View {
     private static final int[] ANGLES = new int[]{60,120,80,100};
     private static final String[] COLORS = new String[]{"#FFB78193","#FF3F51B5","#FFFFDC40","#FF40FFAC"};
-    private static final int RADIUS = Util.dp2px(100);
+    private static final float RADIUS = Util.dp2px(100);
     private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     RectF rectF = new RectF();

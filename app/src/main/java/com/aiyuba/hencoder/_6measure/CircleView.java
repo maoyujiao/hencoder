@@ -21,7 +21,7 @@ import com.aiyuba.hencoder.util.Util;
  */
 
 public class CircleView extends View {
-    private static final int RADIUS = Util.dp2px(100);
+    private static final float RADIUS = Util.dp2px(100);
     private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Context context;
     private Xfermode xfermode = new PorterDuffXfermode(PorterDuff.Mode.SRC_IN);
@@ -30,7 +30,7 @@ public class CircleView extends View {
     public CircleView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
-        bitmap = Util.getBitmap(context,RADIUS * 2);
+        bitmap = Util.getBitmap(context,(int)RADIUS * 2);
     }
 
     @Override

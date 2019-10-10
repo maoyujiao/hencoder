@@ -10,8 +10,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_marginLeft="30dp">
+        android:orientation="vertical">
 
 
     <com.aiyuba.hencoder._6measure.Dashboard
@@ -30,10 +29,30 @@
         <com.aiyuba.hencoder._6measure.CircleView
             android:layout_width="200dp"
             android:layout_height="200dp" />
+        <com.aiyuba.hencoder._7textmeasure.PieTextView
+            android:layout_width="300dp"
+            android:layout_height="300dp" />
+
+        <com.aiyuba.hencoder._7textmeasure.AlignTextview
+            android:layout_width="match_parent"
+            android:layout_height="300dp" />
+        <com.aiyuba.hencoder._7textmeasure.MutliTextview
+            android:layout_width="match_parent"
+            android:layout_height="400dp" />
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="100dp"/>
+            android:layout_height="2dp"
+            android:background="@color/colorPrimary" />
+
+        <com.aiyuba.hencoder._7textmeasure.MultiTextAndPicView
+            android:layout_width="match_parent"
+            android:layout_height="400dp" />
+        
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="200dp"/>
     </LinearLayout>
 
 </ScrollView>

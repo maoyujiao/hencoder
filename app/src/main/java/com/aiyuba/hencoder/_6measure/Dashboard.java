@@ -20,7 +20,7 @@ import com.aiyuba.hencoder.util.Util;
 public class Dashboard extends View {
     private static final int ANGLE = 120;
     private RectF rectF;
-    private static final int Radius = Util.dp2px(70);
+    private static final float Radius = Util.dp2px(70);
     private static final int COUNT = 20;
     private Paint paint;
     private static int index = 4;

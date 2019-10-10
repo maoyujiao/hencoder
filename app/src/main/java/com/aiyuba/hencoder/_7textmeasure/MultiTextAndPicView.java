@@ -54,7 +54,7 @@ public class MultiTextAndPicView extends View {
             }else {
                 textWith = getWidth();
             }
-            int count = paint.breakText(text,start,text.length(),false, textWith, curWith);
+            int count = paint.breakText(text,start,text.length(),true, textWith, curWith);
             canvas.drawText(text,start,start + count,0,vertilOffset,paint);
             vertilOffset += paint.getFontSpacing();
             start +=count;

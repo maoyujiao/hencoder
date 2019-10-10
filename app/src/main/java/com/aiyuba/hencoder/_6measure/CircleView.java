@@ -42,8 +42,9 @@ public class CircleView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        canvas.drawCircle(getWidth()/2 ,getHeight()/2 ,RADIUS + 8,paint);
         int count = canvas.saveLayer(savedArea,paint);//什么离屏缓冲，没这句话不行
-        canvas.drawCircle(getWidth()/2,getHeight()/2,RADIUS,paint);
+        canvas.drawCircle(getWidth()/2 ,getHeight()/2 ,RADIUS,paint);
         paint.setXfermode(xfermode);
         canvas.drawBitmap(bitmap,getWidth()/2 - RADIUS,getHeight()/2 - RADIUS,paint);
         paint.setXfermode(null);

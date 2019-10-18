@@ -22,6 +22,20 @@ allprojects {
     }
 }
 
+allprojects(new Action<Project>() {
+    @Override
+    void execute(Project project) {
+        repositories {
+            google()
+            jcenter()
+        }
+    }
+})
+
+afterEvaluate {
+
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

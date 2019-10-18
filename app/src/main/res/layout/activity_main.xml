@@ -27,8 +27,8 @@
         android:layout_height="300dp" />
 
         <com.aiyuba.hencoder._6measure.CircleView
-            android:layout_width="200dp"
-            android:layout_height="200dp" />
+            android:layout_width="210dp"
+            android:layout_height="210dp" />
         <com.aiyuba.hencoder._7textmeasure.PieTextView
             android:layout_width="300dp"
             android:layout_height="300dp" />

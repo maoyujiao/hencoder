@@ -2,14 +2,29 @@ package com.aiyuba.hencoder;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 
 import com.aiyuba.hencoder.retrofit.Api;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 
+import dalvik.system.DexClassLoader;
+import dalvik.system.PathClassLoader;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.Okio;
+import okio.Sink;
+import okio.Source;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -20,7 +35,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity__7);
+        try {
+            InputStream inputStream = new FileInputStream("./001-002.lrc");
+            try {
+                Reader reader = new InputStreamReader(inputStream,"GBK");
+                try {
+                    System.out.println("maoyujiao："+reader.read());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         //retrofit源码查看
 //        Retrofit retrofit = new Retrofit.Builder()
 //                .baseUrl("https://square.github.io/")

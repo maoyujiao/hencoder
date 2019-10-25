@@ -1,0 +1,121 @@
+recycleview介绍：
+1.viewholder和itemview是一一对应的
+    1.1 注意下oncreateview执行次数
+2.viewholder复用4层
+    scrap  active layer，有recycleview自己实现的屏幕帧刷
+    cache （刚划出的2个）上面两层数据都是clean，直接根据positon来获取viewholder 。这两层都不回掉onbindviewholder（）
+    viewcachextension 用户自定义的回收层，比如不变的广告类型
+    recycleviewpool 数据都是dirty，根据viewtype来找缓存，走onbindviewholder（）
+
+3。viewcachextension 举例
+    列表请求和广告请求一般是两个请求
+    每次滑动都会重新绑定广告数据
+    故可以在viewcachextension层缓存4个卡片广告
+    注意：广告展示的统计：不能在onbindviewholder统计，会少统计，应在onviewAttachtoWindow()方法统计
+
+4。recycleview的优化策略
+  4.1 view的点击监听不应写在onbindviewholder,而应在oncreateviewholder
+  4.2 Linearlayoutmanager.setInitinalPrefetchCount() recycleview嵌套横向滑动的recycleview可能会卡顿，
+  可以设置初次此显示的item可见的个数
+  RenderThread 安卓5.0新出的用于渲染view的线程
+  4。3 recycleview.setHasFixSize(),如果list有固定大小，会直接 lay
+    //为代码
+    void onContentChange(){
+        if(hasFixSize){
+            onLayout()
+        } else{
+            requestLayout()
+        }
+    }
+    所以如果adapter的数据变化并不会导致recycleview大小变化时，可以设置为true
+    4。4 多个recycleview公用recycleviewpool。（前提是，recycleview的itemtype一样）
+        RecycleView.RecycleViewPool pool = new RecycleView.RecycleViewPool();
+        recycleview1.setRecycleViewPool(pool);
+        recycleview2.setRecycleViewPool(pool);
+        recycleview3.setRecycleViewPool(pool);
+
+    4.5 DiffUtil 适用于需要刷新整个界面，但有部分数据相同。
+        //实现回掉DiffUtil.Callback,
+    class MyCallback extends DiffUtil.Callback{
+            private List<User> oldList;
+            private List<User> newList;
+
+            public MyCallback(List<User> oldList,List<User> newList) {
+                this.oldList = oldList;
+                this.newList = newList;
+            }
+
+            @Override
+            public int getOldListSize() {
+                return oldList.size();
+            }
+
+            @Override
+            public int getNewListSize() {
+                return newList.size();
+            }
+
+            @Override
+            public boolean areItemsTheSame(int i, int i1) {
+                return oldList.get(i).getId().equals(newList.get(i).getId());
+            }
+
+            @Override
+            public boolean areContentsTheSame(int i, int i1) {
+                //判断内容是否相同
+                return false;
+            }
+
+            @Nullable
+            @Override
+            public Object getChangePayload(int oldItemPosition, int newItemPosition) {
+                //获取改变的Payload
+                User oldUser = oldList.get(oldItemPosition);
+                User  newUser= oldList.get(newItemPosition);
+                Bundle payload = new Bundle();
+                if(oldUser.getName().equals(newUser.getName())) {
+                    payload.putString();
+                }
+                if(payload.size() == 0) return null;
+                return payload;
+            }
+        }
+
+        //Adapter中方法：
+    @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position, @NonNull List<Object> payloads) {
+            if(payloads == null){
+                onBindViewHolder(holder, position, payloads);
+            } else {
+                Bundle bundle = (Bundle) payloads.get(position);
+                for(String key : bundle.keySet()){
+                    switch (key){
+                        case KEYNAME:
+                            holder.view.setText(bundle.get(key));
+                            break;
+                    }
+                }
+            }
+        }
+
+       void swapData(List<User> newList,boolean diff){
+                   if(diff){
+                       DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new MyCallback(oldList,newList),false);
+                       diffResult.dispatchUpdatesTo(this);
+                   }else {
+                       list = newList;
+                       notifyDataSetChanged();
+                   }
+               }
+
+    在列表很大时，异步计算diff
+    1。使用Thread Handler 将DiffResult发动到主线程
+    2。使用RxJava将计算diff切到后台线程
+    3。使用谷歌提供的AysncListDiffer（也就是Executor）或ListAdapter（对前者的简化）
+
+5。ItemDecoration功能：分割线 高亮部分item 将item进行分组
+    分割线，也可以布局实现，但耗性能（多一个view），同时若item做动画，分割线也会动画。所以还是按google
+    分割线的宽度，只需给DividerItemDecoration设置drawable就行，在drawable设置大小就ok了
+    ItemDecoration 抽象类自定义分割线时实现
+    DividerItemDecoration
+    ItemDecoration可以设置多个

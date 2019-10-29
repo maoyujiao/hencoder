@@ -1,0 +1,86 @@
+登录:Cookie
+授权:Authorization
+1。Cookie：header，客户端请求一个网页，服务端response的header返回Set-Cookie,客户端以域名为单位存储cookie，
+        然后客户端再次请求header中携带Cookie。服务器中也保存Cookie，
+        1。1 用户登录了会新建sessionId来记录登录状态,通过cookie/Set-Cookie来传输。
+        1。2 购物车类似登录的sessiodId，可通过Cookie来管理
+        1。3 cookie管理用户偏好，比如主题
+        1。4 cookie分析用户行为
+        1。5 XSS( Cross site scripting) 跨网站攻击，HttpOnly，
+                解决方式Set-Cookie:sessionid=123;HttpOnly(即脚本看不到)
+            XSRF(Cross site Request Forgey)跨站请求伪造 Referer (显示请求的网站)
+
+            总结：cookie危险，所以目前不在用于登录来
+
+2。Authorization：用于Header中
+    Authorization：Basic<Base64> （Username:passward）的Base64。安全问题交给https
+    Authorization：Bearer<Bearer Token> token的获取由授权方获取
+        token的获取：1。官方网站获取
+                    2。OAuth2 第三方授权（第三方是值被授权方）比如用github登录掘金。则掘金是第三方
+                            client-id 和 client-secret是网页一块申请的，
+                    流程：1。第三方通过client-id来获取授权界面，即调转到github界面，并获取Authrorization code
+                         2. 第三方再将Authrorization code发给自己的server
+                         3。第三方server将Authrorization code 和client-secret发给github的server（github）
+                         4。github的server将token返回给第三方服务器
+                         5。客户端获取用户信息时向自己的服务发送请求，然后自己的server向授权方发送请求（Bearer方式）获取然后在转发客户端。
+                         注意：并不需要将token发给客户端（现实有可能会有人这样用）
+                              第三方登录需要第三方授权
+
+3。Tcp/ip：4层  为什么分层：数据会丢失，网络不稳定，所以为了防止数据全部重新传输，可数据分块来传输。这样就可以数据部分重传了
+                若数据分块传，就需要网络分层了，这样有一层专门来切块
+               应用层：Http，FTP，：要发送数据，但网络不稳定，所以需要分块，所以http下封装一层用于分块
+               传输层Tcp，udp：传输层，为了数据分块，可保证稳定传输。udp，可以不需要重传
+               网络层 IP：不管tcp还是udp都需要网络传，所以在tcp下又分一层
+               数据链路层：以太网，网线，wifi。为数据传输提供现实的支持
+
+    连接：是tcp连接，tcp有很多分块数据，数据需要拼接，拼接需要确认，双方建立确认的过程即是连接
+    3次握手：client 说发想通信
+            server 说我知道了，我也要给你发了
+            Client 说好的，我知道你要发了
+
+    4次连接关闭：client 我不发了
+                server 好的，我知道了
+                server 我发完了，我不在发了
+                client 好的，我知道了。连接关闭
+
+     长连接：
+
+4。https （http over SSL）,不是单独的协议，
+SSL ：Secure Socket Layer 后演变为TLS Transport Layer secure 在http下TCP上增加的安全层，用于保证http的加密传输。
+本质：在客户端和服务器之间协商一个对称密钥，每次发送消息前将内容加密，接到消息后将内容解密。
+为什么不用非对称加密？？？？先用非对称加密确定一个对称密钥，然后用对称密钥加密。因为非对称加密太慢了，效率低
+
+https连接过程：
+ 4。1 建立TLS连接，基于TCP
+ 4。2 服务器发回证书
+ 4。3 客户端验证服务器证书
+ 4。4 客户端信任服务器证书后，开始协商对称密钥
+ 4。5 使用对称密钥开始通信
+
+具体过程：
+    1。client Hello（即一个字节数据） （同时发送TSL版本 + Cipher Suite(加密套件：包括非对称加密算法 对称加密算法 hash算法) + 客户端的随机数）
+    2。server Hello （同时发送已选择的TSL版本具体的非对称加密算法 对称加密算法 hash算法 + server的随机数）
+    3。server 发证书 （证书内容包括证书公钥，server地址，签名，+
+                        （证书机构的公钥，证书的其他信息。。。（公钥验证第一层的hash内容））+
+                                    （证书机构的签发方。。。（公钥验证第二层内容））） 注意：为什么要中间层，不直接用根证书签发，因为根证书很忙。
+                                        OS预装的系统根证书（公钥验证第三层内容）。  3层信任链
+    4。客户端验证证书，并得到服务器公钥（通过3层信任链来验证，如上）
+    5。客户端又产生一个随机数Pre-master secret并通过非对称加密将其传到server
+    6。客户端和server将3个随机数通过算法产生master-sercet，并用此来计算密钥
+            此时client和server产生4个数据   客户端加密密钥
+                                        server加密密钥
+                                        客户端 MAC secret（是HMAC的secret,用于造出别人造不出的hash）
+                                        server MAC secret
+             用密钥加密，用HMAC验证消息
+    7。客户端说：我要开始加密通信了
+    8。客户端发送：Finish（其实是将前面所涉及的消息一块打包发给服务器，让服务器识别）
+    9。server说：我要开始加密通信了
+    10。server发送：Finish（其实是将前面所涉及的消息一块打包发给client,让client识别）
+
+5。安卓使用https：
+    直接使用。
+    有时候不行？？？ 1。可能是自签名
+                  2。可能证书信息不全
+                  3。可能操作系统太旧，没有安装最新的根证书
+自签名证书：自己写证书验证
+HMAC Hash-based Message Authorization Code  MD5(a) = b  HMAC(a) = MD5(fun(a)) = c

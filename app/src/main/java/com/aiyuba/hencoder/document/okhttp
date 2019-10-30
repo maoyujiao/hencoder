@@ -1,0 +1,144 @@
+okhttp角色是什么？做了tcp连接和ssl连接，以及http报文传输和http的一些特性比如超时 重连等，以好友的api方式接提了原生的Http的工作
+call.eventListener 连接的时间点
+Dispatcher 管理线程的
+        private int maxRequests = 64;
+      private int maxRequestsPerHost = 5;
+RealCall
+    getResponseWithInterceptorChain
+
+Okhttp的配置
+            Dispatcher dispatcher; 线程管理
+            @Nullable Proxy proxy; 代理
+            List<Protocol> protocols; http协议，1。0 ，2。0
+            List<ConnectionSpec> connectionSpecs;  CipherSuite，https的算法 APPROVED_CIPHER_SUITES MODERN_TLS CLEARTEXT（即为http）
+            final List<Interceptor> interceptors = new ArrayList<>();
+            final List<Interceptor> networkInterceptors = new ArrayList<>();
+            EventListener.Factory eventListenerFactory; 用来做记录的
+            ProxySelector proxySelector;
+            CookieJar cookieJar; cookie的存储器
+            @Nullable Cache cache;
+            @Nullable InternalCache internalCache;
+            SocketFactory socketFactory; 创建tcp端口
+            @Nullable SSLSocketFactory sslSocketFactory; 创建TSL的端口
+            @Nullable CertificateChainCleaner certificateChainCleaner; 证书整理成序列
+            HostnameVerifier hostnameVerifier;主机名验证器
+            CertificatePinner certificatePinner;  1。不使用根证书验证而是自签名证书，2。防止中间中间证书被收买
+
+                    String hostname = "hencoder.com";
+                     CertificatePinner certificatePinner = new CertificatePinner.Builder()
+                           .add(hostname, "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+                           .build();
+                      OkHttpClient client = OkHttpClient.Builder()
+                           .certificatePinner(certificatePinner)
+                           .authenticator(new Authenticator() {
+                                               @Nullable
+                                               @Override
+                                               public Request authenticate(Route route, okhttp3.Response response) throws IOException {
+                                                   //此处可以通过网络请求获取第三方Authorization code,然后传给
+                                                   Request request= response.request().newBuilder().
+                                                           header("Authorization","Bear hash token")
+                                                           .build();
+                                                   return request;
+                                               }
+                                           })
+                            .addInterceptor(new Interceptor() {
+                                                @Override
+                                                public okhttp3.Response intercept(Chain chain) throws IOException {
+                                                    //前置工作
+                                                    okhttp3.Response response = chain.proceed(chain.request());
+                                                    //后置工作
+                                                    return response;
+                                                }
+                                            })
+                           .build();
+                       Request request = new Request.Builder()
+                              .url("https://" + hostname)
+                              .build();
+                          client.newCall(request).execute();
+                    以上代码会报 SSLPeerUnverifiedException: Certificate pinning failure!
+                    日志中会有一系列证书的公钥，复制上去即可成功请求。
+
+            Authenticator proxyAuthenticator;
+            Authenticator authenticator; 见上面的使用方式
+            ConnectionPool connectionPool; 连接池，类似线程池
+            Dns dns; 域名解析，返回一个IP list
+            boolean followSslRedirects;是否允许http和https重定向时是否要互跳
+                boolean followRedirects; 是否重定向
+                boolean retryOnConnectionFailure; 请求失败是否重连
+                int connectTimeout; tcp连接超时时间
+                int readTimeout; 下载响应时间
+                int writeTimeout; 写入响应时间
+                int pingInterval; 长连接心跳的间隔
+getResponseWithInterceptorChain（）的解析
+
+        Response getResponseWithInterceptorChain() throws IOException {
+            // Build a full stack of interceptors.
+            List<Interceptor> interceptors = new ArrayList<>();
+            interceptors.addAll(client.interceptors());
+            interceptors.add(retryAndFollowUpInterceptor);
+            interceptors.add(new BridgeInterceptor(client.cookieJar()));
+            interceptors.add(new CacheInterceptor(client.internalCache()));
+            interceptors.add(new ConnectInterceptor(client));
+            if (!forWebSocket) {
+              interceptors.addAll(client.networkInterceptors());
+            }
+            interceptors.add(new CallServerInterceptor(forWebSocket));
+
+            Interceptor.Chain chain = new RealInterceptorChain(interceptors, null, null, null, 0,
+                originalRequest, this, eventListener, client.connectTimeoutMillis(),
+                client.readTimeoutMillis(), client.writeTimeoutMillis());
+
+            return chain.proceed(originalRequest);
+          }
+          Interceptor 构成chain,当内容太复杂时，可以通过chain
+
+            interceptors.add(retryAndFollowUpInterceptor); StreamAllocation Connection Streams Calls
+                             while (true){
+                                         //前置工作
+                                         //交给下一个拦截器
+                                         response = realChain.proceed(request, streamAllocation, null, null);
+                                         //后置工作
+                                         if (priorResponse != null) {
+                                             response = response.newBuilder()
+                                                     .priorResponse(priorResponse.newBuilder()
+                                                             .body(null)
+                                                             .build())
+                                                     .build();
+                                         }
+
+                                         Request followUp = followUpRequest(response, streamAllocation.route());
+                                         if (followUp == null) {
+                                             return response;
+                                         } else {
+                                             request = followUp; //继续本应用请求
+                                     }
+                                 }
+            interceptors.add(new BridgeInterceptor(client.cookieJar()));
+                前置工作：在数据发射前将http的header进行添加，
+                后置工作：Response的header进行处理
+            interceptors.add(new CacheInterceptor(client.internalCache()));
+                         if (networkRequest == null) {
+                              return cacheResponse.newBuilder()
+                                  .cacheResponse(stripBody(cacheResponse))
+                                  .build();
+                            }
+            interceptors.add(new ConnectInterceptor(client));
+                                HttpCodec httpCodec = streamAllocation.newStream(client, chain, doExtensiveHealthChecks);
+                                httpCodec 编码解码器
+                                newStream将http转换为tcp连接或者tcp连接上叠加一个ssl连接
+
+            if (!forWebSocket) {
+                  interceptors.addAll(client.networkInterceptors());
+                                         Interceptor 和networkInterceptors的区别，是连着在Chain链上的位置不同，
+                                         networkInterceptors在倒数第二个位置，一般我们不做处理，所以添加的Interceptor
+                }
+                interceptors.add(new CallServerInterceptor(forWebSocket));
+                                       CallServerInterceptor 最后一个interceptors，主要往socket里面写东西，比如请求的header和body
+                                       写header：   sink.writeUtf8(requestLine).writeUtf8("\r\n");
+                                                   for (int i = 0, size = headers.size(); i < size; i++) {
+                                                     sink.writeUtf8(headers.name(i))
+                                                         .writeUtf8(": ")
+                                                         .writeUtf8(headers.value(i))
+                                                         .writeUtf8("\r\n");
+                                                   }
+                                                   sink.writeUtf8("\r\n");

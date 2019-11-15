@@ -1,0 +1,6 @@
+绘制：
+onDraw
+Canvas
+Paint
+坐标系:屏幕左上角为原点
+单位：px。dp主要是为了做适配

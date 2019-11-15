@@ -1,0 +1,15 @@
+多线程：
+    1。thread.start();
+        本地方法：调用jvm，和操作系统交互
+    使用方式：
+     new Thread()
+     new Thread(Runnable)
+     ThreadFactory,
+     Executor
+     ExecutorService shutdown,shutdownNow
+     Executors
+        Executors.newFixedThreadPool() 一次性任务的线程池，别忘记shutdown
+    自定义线程池：ThreadPoolExecutor executor = new ThreadPoolExecutor();
+                executor.execute();
+    Callable,又返回值的线程 executor.submit(callable),返回Future对象，future.get()是阻塞方法
+    Handler AsynTask可替换Callable

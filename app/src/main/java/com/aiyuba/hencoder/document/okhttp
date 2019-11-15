@@ -6,7 +6,7 @@ Dispatcher 管理线程的
 RealCall
     getResponseWithInterceptorChain
 
-Okhttp的配置
+OkhttpClient的配置
             Dispatcher dispatcher; 线程管理
             @Nullable Proxy proxy; 代理
             List<Protocol> protocols; http协议，1。0 ，2。0

@@ -1,11 +1,19 @@
 package com.aiyuba.retrofitokhttp;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import okhttp3.ResponseBody;
@@ -27,14 +35,43 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+    TextView textAidl;
+    private IAdditionService mService;
+    ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mService = IAdditionService.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        TextView textView = findViewById(R.id.text);
-        textView.setText(getClass().getSimpleName());
+        Button btn = findViewById(R.id.btn);
+        textAidl = findViewById(R.id.textAidl);
+        Intent intent = new Intent(this,AddititionService.class);
+        bindService(intent,connection, Context.BIND_AUTO_CREATE);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    int result = mService.add(200,400);
+                    textAidl.setText("相加的结果："+result);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+//        textView.setText(getClass().getSimpleName());
 //        Call<ResponseBody> call = HttpInstance.getInstance().getUserInfo("rengwuxian");
 //        call.enqueue(new Callback<ResponseBody>() {
 //            @Override
@@ -61,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 Looper.loop();
             }
         }.start();
+
 
     }
 
